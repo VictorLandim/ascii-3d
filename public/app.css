@@ -13,44 +13,31 @@ html {
 }
 
 body {
-  background-color: #303030;
+  background: linear-gradient(to top, #303030, #202020);
   color: #eee;
 }
 
-#map {
-}
-
-#screen {
-  font-family: monospace;
-
-  /* width: 840px; */
-  /* height: 280px; */
-  background-color: #202020;
-  border: 5px solid #ddd;
+#canvas {
+  display: block;
+  background-color: #000;
+  image-rendering: pixelated;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  /* overflow-wrap: break-word; */
-  display: flex;
-  flex-direction: column;
+  width: 1300px;
+  height: 650px;
+  /* max-width: 100%; */
+  border: 5px solid #eee;
+
+  width: 100vw;
+  height: 100vh;
 }
 
-.row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.letter {
-  font-size: 20px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* border: 1px solid transparent; */
-  width: 0.95rem;
-  height: 0.95rem;
-  /* padding: 0.2rem; */
-  text-align: center;
-}
+/* canvas {
+	image-rendering: optimizeSpeed;
+	image-rendering: -moz-crisp-edges;
+	image-rendering: -webkit-optimize-contrast;
+	image-rendering: optimize-contrast;
+	-ms-interpolation-mode: nearest-neighbor;
+} */

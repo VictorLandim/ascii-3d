@@ -1,158 +1,204 @@
-document.addEventListener('DOMContentLoaded', main);
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 
-function main() {
-  const SCREEN_WIDTH = 40;
-  const SCREEN_HEIGHT = 20;
+// canvas.width = 2000;
+// canvas.height = 1000;
 
-  const MAP_WIDTH = 16;
-  const MAP_HEIGHT = 16;
+ctx.mozImageSmoothingEnabled = false;
+ctx.webkitImageSmoothingEnabled = false;
+ctx.msImageSmoothingEnabled = false;
+ctx.imageSmoothingEnabled = false;
 
-  const DEPTH = 16;
+// 50X25
+const SCREEN_WIDTH = 120;
+const SCREEN_HEIGHT = SCREEN_WIDTH / 2;
+const GRID_SIZE = canvas.width / SCREEN_WIDTH;
 
-  const FOV = Math.PI / 4;
+const MAP_WIDTH = 16;
+const MAP_HEIGHT = 16;
 
-  let map = `
-  ################
-  #..............#
-  #..............#
-  #..............#
-  #...##.........#
-  #..............#
-  #..............#
-  #.........######
-  #..............#
-  #..............#
-  #..............#
-  #..............#
-  #..............#
-  #..............#
-  #..............#
-  ################
-  `;
+const DEPTH = 16;
 
-  let screen = new Array(SCREEN_WIDTH * SCREEN_HEIGHT).fill('.');
+const FOV = Math.PI / 4;
 
-  let player = {
-    x: 8,
-    y: 2,
-    a: Math.PI / 5
-  };
+let map = "";
+map += "################";
+map += "#..............#";
+map += "#..............#";
+map += "#..............#";
+map += "#..............#";
+map += "#..............#";
+map += "#..............#";
+map += "#.........#....#";
+map += "#..............#";
+map += "#..............#";
+map += "#..............#";
+map += "#..............#";
+map += "#..............#";
+map += "#..............#";
+map += "#..............#";
+map += "################";
 
-  function createScreen() {
-    const screenEl = document.getElementById('screen');
+let screen = new Array(SCREEN_WIDTH, SCREEN_HEIGHT).fill(".");
 
-    screen.forEach((char, i) => {
-      if (i % SCREEN_WIDTH === 0) {
-        const row = createRow(screen.slice(i, i + SCREEN_WIDTH), i);
-        screenEl.appendChild(row);
-      }
-    });
+let player = {
+  x: 8,
+  y: 8,
+  a: Math.PI
+};
+
+drawGrid(canvas, ctx);
+// fillGrid(canvas, ctx);
+
+function drawGrid(canvas, ctx) {
+  ctx.strokeStyle = "white";
+
+  for (let x = 0; x < canvas.width; x += GRID_SIZE) {
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, canvas.height);
+    ctx.stroke();
   }
 
-  function drawAt(id, text) {
-    document.getElementById(id).innerHTML = text;
+  for (let y = 0; y < canvas.height; y += GRID_SIZE) {
+    ctx.moveTo(0, y);
+    ctx.lineTo(canvas.width, y);
+    ctx.stroke();
   }
-
-  function createRow(rowArray, i) {
-    const row = document.createElement('div');
-    row.className = 'row';
-
-    rowArray.forEach((e, j) => {
-      const letter = document.createElement('div');
-      letter.className = 'letter';
-      letter.id = i + j;
-      letter.appendChild(document.createTextNode(e));
-      // debug
-      // letter.appendChild(document.createTextNode(i + j));
-      row.appendChild(letter);
-    });
-
-    return row;
-  }
-
-  function clear() {
-    const parent = document.getElementById('screen');
-    while (parent.firstChild) {
-      parent.firstChild.remove();
-    }
-  }
-
-  function draw() {
-    for (let y = 0; y < SCREEN_HEIGHT; y++) {
-      document.getElementById('screen').appendChild(createRow(screen.slice(y, y + SCREEN_HEIGHT)));
-    }
-  }
-
-  function handleControls() {
-    document.addEventListener('keypress', e => {
-      if (e.key == 'a') {
-        player.a -= 0.01;
-      }
-
-      if (e.key == 'd') {
-        player.a += 0.01;
-      }
-
-      if (e.key == 'w') {
-        player.x += 0.1;
-      }
-
-      if (e.key == 's') {
-        player.x -= 0.1;
-      }
-    });
-  }
-
-  handleControls();
-  createScreen();
-
-  function loop() {
-    for (let x = 0; x < SCREEN_WIDTH; x++) {
-      const rayAngle = player.a - FOV / 2 + (x / SCREEN_WIDTH) * FOV;
-      let distanceToWall = 0;
-      let hitWall = false;
-
-      const eyeX = Math.sin(rayAngle);
-      const eyeY = Math.cos(rayAngle);
-
-      while (!hitWall && distanceToWall < DEPTH) {
-        distanceToWall += 0.1;
-
-        const testX = parseInt(player.x + eyeX * distanceToWall);
-        const testY = parseInt(player.y + eyeY * distanceToWall);
-
-        if (testX < 0 || testX >= MAP_WIDTH || testY < 0 || testY >= MAP_HEIGHT) {
-          hitWall = true;
-          distanceToWall = DEPTH;
-        } else {
-          if (map[testY * MAP_WIDTH + testX] === '#') {
-            hitWall = true;
-          }
-        }
-      }
-
-      const ceiling = SCREEN_HEIGHT / 2 - SCREEN_HEIGHT / distanceToWall;
-      const floor = SCREEN_HEIGHT - ceiling;
-
-      for (let y = 0; y < SCREEN_HEIGHT; y++) {
-        if (y < ceiling) {
-          screen[y * SCREEN_WIDTH + x] = ' ';
-          drawAt(y * SCREEN_WIDTH + x, ' ');
-        } else if (y > ceiling && y <= floor) {
-          screen[y * SCREEN_WIDTH + x] = '#';
-          drawAt(y * SCREEN_WIDTH + x, '#');
-        } else {
-          screen[y * SCREEN_WIDTH + x] = ' ';
-          drawAt(y * SCREEN_WIDTH + x, ' ');
-        }
-      }
-
-      // draw();
-      // document.getElementById('screen').appendChild(createRow(screen.slice(x, x + SCREEN_WIDTH)));
-    }
-  }
-
-  setInterval(loop, 40);
-  // createScreen();
-  // loop();
 }
+
+function fillGrid(canvas, ctx) {
+  ctx.fillStyle = "white";
+  ctx.strokeStyle = "white";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = "33px monospace";
+
+  for (let x = 1; x <= canvas.width; x += 2) {
+    for (let y = 1; y <= canvas.height; y += 2) {
+      ctx.fillText(`#`, (x / 2) * GRID_SIZE, (y / 2) * GRID_SIZE);
+    }
+  }
+}
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "white";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = `${SCREEN_WIDTH / 9}px monospace`;
+
+  for (let i = 0; i < screen.length; i++) {
+    const x = parseInt(i % SCREEN_WIDTH);
+    const y = parseInt(i / SCREEN_WIDTH);
+
+    ctx.fillText(
+      screen[i],
+      x * GRID_SIZE + GRID_SIZE / 2,
+      y * GRID_SIZE + GRID_SIZE / 2
+    );
+  }
+}
+
+function handleControls() {
+  document.addEventListener("keypress", e => {
+    const ROTATION_SPEED = 0.05;
+    const WALKING_SPEED = 0.3;
+
+    if (e.key == "a") {
+      player.a -= ROTATION_SPEED;
+    }
+
+    if (e.key == "d") {
+      player.a += ROTATION_SPEED;
+    }
+
+    if (e.key == "w") {
+      player.x += Math.sin(player.a) * WALKING_SPEED;
+      player.y += Math.cos(player.a) * WALKING_SPEED;
+
+      if (map[player.y * MAP_WIDTH + player.x] === "#") {
+        player.x -= Math.sin(player.a) * WALKING_SPEED;
+        player.y -= Math.cos(player.a) * WALKING_SPEED;
+      }
+    }
+
+    if (e.key == "s") {
+      player.x -= Math.sin(player.a) * WALKING_SPEED;
+      player.y -= Math.cos(player.a) * WALKING_SPEED;
+
+      if (map[player.y * MAP_WIDTH + player.x] === "#") {
+        player.x += Math.sin(player.a) * WALKING_SPEED;
+        player.y += Math.cos(player.a) * WALKING_SPEED;
+      }
+    }
+  });
+}
+
+function loop() {
+  for (let x = 0; x < SCREEN_WIDTH; x++) {
+    const rayAngle = player.a - FOV / 2 + (x / SCREEN_WIDTH) * FOV;
+    let distanceToWall = 0;
+    let hitWall = false;
+
+    const eyeX = Math.sin(rayAngle);
+    const eyeY = Math.cos(rayAngle);
+
+    while (!hitWall && distanceToWall < DEPTH) {
+      distanceToWall += 0.1;
+
+      const testX = parseInt(player.x + eyeX * distanceToWall);
+      const testY = parseInt(player.y + eyeY * distanceToWall);
+
+      if (testX < 0 || testX >= MAP_WIDTH || testY < 0 || testY >= MAP_HEIGHT) {
+        hitWall = true;
+        distanceToWall = DEPTH;
+      } else {
+        if (map[testY * MAP_WIDTH + testX] === "#") {
+          hitWall = true;
+        }
+      }
+    }
+
+    const ceiling = SCREEN_HEIGHT / 2 - SCREEN_HEIGHT / distanceToWall;
+    const floor = SCREEN_HEIGHT - ceiling;
+
+    let shade = " ";
+
+    // for reference
+    const grayRamp =
+      "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
+
+    if (distanceToWall <= DEPTH / 4) shade = "█";
+    else if (distanceToWall < DEPTH / 3) shade = "▓";
+    else if (distanceToWall < DEPTH / 2) shade = "▒";
+    else if (distanceToWall < DEPTH) shade = "░";
+    // if (distanceToWall <= DEPTH / 4) shade = "@";
+    // else if (distanceToWall < DEPTH / 3) shade = "@";
+    // else if (distanceToWall < DEPTH / 2) shade = "U";
+    // else if (distanceToWall < DEPTH) shade = "t";
+    else shade = " ";
+
+    for (let y = 0; y < SCREEN_HEIGHT; y++) {
+      if (y < ceiling) {
+        screen[y * SCREEN_WIDTH + x] = " ";
+      } else if (y > ceiling && y <= floor) {
+        screen[y * SCREEN_WIDTH + x] = shade;
+      } else {
+        const b = 1 - (y - SCREEN_HEIGHT / 2) / (SCREEN_HEIGHT / 2);
+
+        if (b < 0.25) shade = "#";
+        else if (b < 0.5) shade = "x";
+        else if (b < 0.75) shade = ".";
+        else if (b < 0.9) shade = "-";
+        else shade = " ";
+        screen[y * SCREEN_WIDTH + x] = shade;
+      }
+    }
+  }
+
+  draw();
+  requestAnimationFrame(loop);
+}
+
+handleControls();
+loop();
